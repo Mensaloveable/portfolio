@@ -37,3 +37,5 @@ src/main/resources/application-dev.properties
 mvnw.cmd
 mvnw
 /.idea
+logs
+maven-wrapper.properties
