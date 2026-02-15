@@ -1,0 +1,133 @@
+{
+  "meta": {
+    "name": "Abdullahi Adedayo Adekola",
+    "title": "Senior Software Engineer",
+    "tagline": "Available for opportunities",
+    "email": "abdullahi.adedayo@gmail.com",
+    "phone": "+234 818 984 8421",
+    "location": "Ikeja, Lagos, Nigeria",
+    "linkedin": "https://linkedin.com/in/abdullahi-adedayo",
+    "github": "https://github.com/mensaloveable",
+    "shortBio": "I build scalable, high-availability systems for fintech and enterprise — from Java microservices to React frontends. Based in Lagos, Nigeria."
+  },
+  "about": {
+    "paragraphs": [
+      "I'm a <strong>Senior Software Engineer</strong> with 5+ years of experience designing and shipping production systems across fintech, banking, and SaaS platforms. My work spans the full stack — Java Spring Boot microservices, Node.js APIs, React frontends, and cloud infrastructure on AWS.",
+      "At <strong>Paga</strong>, I led backend engineering for core payment systems — building reconciliation modules, lien management systems, and an automated card reversal flow that eliminated manual intervention from a critical customer pain point.",
+      "At <strong>OnePipe</strong>, I optimised financial transaction limits, integrated NIBSS Direct Debit across partner banks, and implemented event-driven architectures using RabbitMQ that handled thousands of daily transactions reliably.",
+      "I care deeply about code quality, developer experience, and building systems that don't just work — but are maintainable and observable over time."
+    ]
+  },
+  "stats": [
+    { "value": "5+", "label": "Years of Experience" },
+    { "value": "8+", "label": "Languages & Frameworks" },
+    { "value": "4+", "label": "Fintech Products Shipped" }
+  ],
+  "skills": [
+    {
+      "icon": "⚙️",
+      "name": "Backend",
+      "tags": ["Java 8–21", "Spring Boot", "Spring WebFlux", "Node.js", "Express.js", "Python", "Django", "REST APIs", "Microservices"]
+    },
+    {
+      "icon": "🖥️",
+      "name": "Frontend",
+      "tags": ["React.js", "Angular", "TypeScript", "JavaScript ES6+", "HTML5", "CSS3", "Responsive Design"]
+    },
+    {
+      "icon": "☁️",
+      "name": "Cloud & DevOps",
+      "tags": ["AWS Lambda", "API Gateway", "DynamoDB", "S3", "SES", "Docker", "GitHub Actions", "Jenkins", "CI/CD"]
+    },
+    {
+      "icon": "🗄️",
+      "name": "Data Stores",
+      "tags": ["PostgreSQL", "MSSQL", "MySQL", "MongoDB", "Redis", "DynamoDB"]
+    },
+    {
+      "icon": "📨",
+      "name": "Messaging",
+      "tags": ["RabbitMQ", "Kafka", "MQTT", "Event-Driven"]
+    },
+    {
+      "icon": "🧪",
+      "name": "Testing & Practices",
+      "tags": ["TDD", "BDD", "JUnit", "Mockito", "Jest", "Agile/Scrum", "DDD", "Swagger"]
+    }
+  ],
+  "experience": [
+    {
+      "role": "Backend Engineer — Team Lead",
+      "company": "Paga Technology",
+      "dates": "May 2023 – Present",
+      "type": "Hybrid",
+      "blurb": "Mobile payment ecosystem for digital money transfers across Africa",
+      "bullets": [
+        "Architected and delivered a Lien Management System for account-level financial controls and regulatory compliance.",
+        "Designed a reconciliation module bridging the order service and financial module with real-time payment flow insights.",
+        "Implemented an automated card-funding reversal system, eliminating manual CX intervention on failed transactions.",
+        "Built automated withdrawal routing logic that dynamically selects the appropriate processor by amount.",
+        "Delivered bulk transaction export (CSV & Excel) for back-office financial analysis and audit workflows.",
+        "Championed an in-house documentation generation tool for the legacy codebase to improve onboarding speed."
+      ],
+      "tech": ["Java", "Spring Boot", "MSSQL", "Stored Procedures", "Azure", "Microservices"]
+    },
+    {
+      "role": "Software Engineer",
+      "company": "OnePipe",
+      "dates": "Jan 2021 – Apr 2023",
+      "type": "Remote",
+      "blurb": "Unified API layer enabling Nigerian financial institutions to access banking services",
+      "bullets": [
+        "Optimised the limit management system for financial transactions, improving processing efficiency by 40%.",
+        "Designed and built NIBSS Direct Debit integration, supporting thousands of recurring debit mandates daily.",
+        "Implemented eMandate creation, activation, and retry workflows using event-driven architecture with RabbitMQ.",
+        "Built a full-stack KPI dashboard for educational clients — Spring Boot backend + React frontend."
+      ],
+      "tech": ["Java", "Spring Boot", "React", "TypeScript", "RabbitMQ", "PostgreSQL", "MongoDB"]
+    },
+    {
+      "role": "Junior Software Developer",
+      "company": "Schoolite",
+      "dates": "Jun 2019 – Feb 2020",
+      "type": "Nigeria",
+      "blurb": "Edtech platform for student registration and administrative operations",
+      "bullets": [
+        "Built a cloud-native student registration portal on AWS (S3, SES, DynamoDB) with MongoDB as the primary datastore.",
+        "Improved application response times through database query optimisation and efficient backend coding practices.",
+        "Collaborated with the R&D team on emerging technology evaluation and strategic adoption decisions."
+      ],
+      "tech": ["Java", "Spring Boot", "AWS", "MongoDB", "Docker"]
+    }
+  ],
+  "projects": [
+    {
+      "num": "01",
+      "name": "Decapay",
+      "desc": "A comprehensive personal finance tracking app with expense categorisation, budget management, Cloudinary file uploads, and AWS SES email notifications. Deployed with Docker and automated via GitHub Actions CI/CD.",
+      "tags": ["Java", "Spring Boot", "React", "MongoDB", "AWS SES", "Docker"],
+      "link": ""
+    },
+    {
+      "num": "02",
+      "name": "FoodMart",
+      "desc": "A full-featured e-commerce platform with Paystack payment integration, inventory management, and delivery tracking. Deployed on AWS using Docker Compose for a scalable, containerised architecture.",
+      "tags": ["Java", "Spring Boot", "React", "PostgreSQL", "Paystack", "AWS"],
+      "link": ""
+    },
+    {
+      "num": "03",
+      "name": "Shift Schedule",
+      "desc": "Published Android app for industrial shift workers with overtime calculation and calendar integration. Serves hundreds of active users on the Google Play Store.",
+      "tags": ["Android", "Kotlin", "Retrofit", "Play Store"],
+      "link": ""
+    }
+  ],
+  "certifications": [
+    "Scrum Fundamentals Certified",
+    "Google Africa Developer Scholarship",
+    "Standard English Certification — EF International",
+    "Winner, Edo State Education Hackathon 2022"
+  ],
+  "education": "BSc Chemistry — University of Ilorin"
+}
