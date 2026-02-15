@@ -27,17 +27,45 @@
     {
       "icon": "⚙️",
       "name": "Backend",
-      "tags": ["Java 8–21", "Spring Boot", "Spring WebFlux", "Node.js", "Express.js", "Python", "Django", "REST APIs", "Microservices"]
+      "tags": [
+        "Java 8–21",
+        "Spring Boot",
+        "Spring WebFlux",
+        "Node.js",
+        "Express.js",
+        "Python",
+        "Django",
+        "REST APIs",
+        "Microservices"
+      ]
     },
     {
       "icon": "🖥️",
       "name": "Frontend",
-      "tags": ["React.js", "Angular", "TypeScript", "JavaScript ES6+", "HTML5", "CSS3", "Responsive Design"]
+      "tags": [
+        "React.js",
+        "Angular",
+        "TypeScript",
+        "JavaScript ES6+",
+        "HTML5",
+        "CSS3",
+        "Responsive Design"
+      ]
     },
     {
       "icon": "☁️",
       "name": "Cloud & DevOps",
-      "tags": ["AWS Lambda", "API Gateway", "DynamoDB", "S3", "SES", "Docker", "GitHub Actions", "Jenkins", "CI/CD"]
+      "tags": [
+        "AWS Lambda",
+        "API Gateway",
+        "DynamoDB",
+        "S3",
+        "SES",
+        "Docker",
+        "GitHub Actions",
+        "Jenkins",
+        "CI/CD"
+      ]
     },
     {
       "icon": "🗄️",
@@ -52,7 +80,16 @@
     {
       "icon": "🧪",
       "name": "Testing & Practices",
-      "tags": ["TDD", "BDD", "JUnit", "Mockito", "Jest", "Agile/Scrum", "DDD", "Swagger"]
+      "tags": [
+        "TDD",
+        "BDD",
+        "JUnit",
+        "Mockito",
+        "Jest",
+        "Agile/Scrum",
+        "DDD",
+        "Swagger"
+      ]
     }
   ],
   "experience": [
@@ -70,7 +107,14 @@
         "Delivered bulk transaction export (CSV & Excel) for back-office financial analysis and audit workflows.",
         "Championed an in-house documentation generation tool for the legacy codebase to improve onboarding speed."
       ],
-      "tech": ["Java", "Spring Boot", "MSSQL", "Stored Procedures", "Azure", "Microservices"]
+      "tech": [
+        "Java",
+        "Spring Boot",
+        "MSSQL",
+        "Stored Procedures",
+        "Azure",
+        "Microservices"
+      ]
     },
     {
       "role": "Software Engineer",
@@ -84,7 +128,15 @@
         "Implemented eMandate creation, activation, and retry workflows using event-driven architecture with RabbitMQ.",
         "Built a full-stack KPI dashboard for educational clients — Spring Boot backend + React frontend."
       ],
-      "tech": ["Java", "Spring Boot", "React", "TypeScript", "RabbitMQ", "PostgreSQL", "MongoDB"]
+      "tech": [
+        "Java",
+        "Spring Boot",
+        "React",
+        "TypeScript",
+        "RabbitMQ",
+        "PostgreSQL",
+        "MongoDB"
+      ]
     },
     {
       "role": "Junior Software Developer",

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Portfolio CMS</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0A0C0F; --surface: #111318; --surface2: #181C24;
+      --border: #1E2330; --accent: #00D4A8; --danger: #FF5A5A;
+      --text: #E8EAF0; --muted: #6B7280; --dim: #3A3F4D;
+      --mono: 'DM Mono', monospace; --sans: 'Outfit', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 300; min-height: 100vh; }
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--dim); }
+
+    /* ── Lock screen ── */
+    #lockScreen {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; flex-direction: column; gap: 1.5rem;
+    }
+    .lock-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem 3rem; width: 360px; text-align: center; }
+    .lock-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .lock-title { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem; }
+    .lock-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 0.85rem 1rem; color: var(--text); font-family: var(--mono); font-size: 1rem; outline: none; text-align: center; letter-spacing: 0.15em; transition: border-color 0.2s; margin-bottom: 1rem; }
+    .lock-input:focus { border-color: var(--accent); }
+    .lock-btn { width: 100%; padding: 0.85rem; background: var(--accent); color: var(--bg); border: none; border-radius: 6px; font-family: var(--sans); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .lock-btn:hover { background: #00f0c2; }
+    .lock-error { font-family: var(--mono); font-size: 0.75rem; color: var(--danger); margin-top: 0.75rem; display: none; }
+
+    /* ── Admin shell ── */
+    #adminShell { display: none; }
+    .admin-header { position: sticky; top: 0; z-index: 50; background: rgba(10,12,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .admin-logo { font-family: var(--mono); font-size: 0.85rem; color: var(--accent); }
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .btn-save { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; background: var(--accent); color: var(--bg); border: none; border-radius: 4px; font-family: var(--sans); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-save:hover { background: #00f0c2; }
+    .btn-preview { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 4px; font-family: var(--sans); font-size: 0.85rem; text-decoration: none; cursor: pointer; transition: all 0.2s; }
+    .btn-preview:hover { border-color: var(--dim); background: var(--surface); }
+    .btn-logout { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); background: none; border: none; cursor: pointer; transition: color 0.2s; padding: 0.5rem; }
+    .btn-logout:hover { color: var(--danger); }
+
+    .save-status { font-family: var(--mono); font-size: 0.75rem; padding: 0.4rem 0.85rem; border-radius: 4px; display: none; }
+    .save-status.show { display: inline-block; }
+    .save-status.success { background: rgba(0,212,168,0.1); color: var(--accent); border: 1px solid rgba(0,212,168,0.3); }
+    .save-status.error { background: rgba(255,90,90,0.1); color: var(--danger); border: 1px solid rgba(255,90,90,0.3); }
+
+    /* ── Layout ── */
+    .admin-body { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 57px); }
+    .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 0; position: sticky; top: 57px; height: calc(100vh - 57px); overflow-y: auto; }
+    .sidebar-section { padding: 0.4rem 0; margin-bottom: 0.5rem; }
+    .sidebar-label { font-family: var(--mono); font-size: 0.65rem; color: var(--dim); letter-spacing: 0.15em; text-transform: uppercase; padding: 0.25rem 1.5rem; margin-bottom: 0.25rem; }
+    .sidebar-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1.5rem; font-size: 0.875rem; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; }
+    .sidebar-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .sidebar-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,212,168,0.05); }
+    .sidebar-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    .main-content { padding: 2rem; overflow-y: auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel-title { font-size: 1.3rem; font-weight: 600; color: var(--text); margin-bottom: 0.35rem; }
+    .panel-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+
+    /* ── Form elements ── */
+    .field-group { margin-bottom: 1.5rem; }
+    .field-label { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; display: block; }
+    .field-hint { font-size: 0.75rem; color: var(--dim); margin-bottom: 0.4rem; }
+    .field-input, .field-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; color: var(--text); font-family: var(--sans); font-size: 0.9rem; font-weight: 300; outline: none; transition: border-color 0.2s; }
+    .field-input:focus, .field-textarea:focus { border-color: var(--accent); }
+    .field-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .field-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    /* ── Cards (experience, projects, skills) ── */
+    .card-list { display: flex; flex-direction: column; gap: 1rem; }
+    .editor-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; cursor: pointer; background: var(--surface); transition: background 0.15s; user-select: none; }
+    .card-header:hover { background: var(--surface2); }
+    .card-header-left { display: flex; align-items: center; gap: 0.75rem; }
+    .card-header-title { font-size: 0.95rem; font-weight: 500; color: var(--text); }
+    .card-header-sub { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+    .card-chevron { color: var(--dim); transition: transform 0.2s; font-size: 0.75rem; }
+    .card-chevron.open { transform: rotate(180deg); }
+    .card-body { display: none; padding: 1.25rem; border-top: 1px solid var(--border); }
+    .card-body.open { display: block; }
+
+    /* ── List editors (bullets, tags, certs) ── */
+    .list-editor { display: flex; flex-direction: column; gap: 0.5rem; }
+    .list-item-row { display: flex; gap: 0.5rem; align-items: flex-start; }
+    .list-item-row .field-input { flex: 1; }
+    .list-item-row .field-textarea { flex: 1; }
+    .btn-remove { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.5rem 0.65rem; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; flex-shrink: 0; margin-top: 0; }
+    .btn-remove:hover { border-color: var(--danger); color: var(--danger); }
+    .btn-add { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem; padding: 0.45rem 1rem; background: transparent; border: 1px dashed var(--dim); border-radius: 4px; color: var(--muted); font-family: var(--sans); font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+    .btn-add:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Add new card button ── */
+    .btn-add-card { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 1rem; background: transparent; border: 1px dashed var(--border); border-radius: 8px; color: var(--muted); font-family: var(--sans); font-size: 0.875rem; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+    .btn-add-card:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,168,0.03); }
+    .btn-danger { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.45rem 0.9rem; cursor: pointer; font-family: var(--sans); font-size: 0.78rem; transition: all 0.15s; }
+    .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    /* ── Password change ── */
+    .password-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; max-width: 420px; }
+    .password-box .field-group { margin-bottom: 1rem; }
+
+    /* ── How to deploy banner ── */
+    .deploy-banner { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; }
+    .deploy-banner h3 { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.75rem; }
+    .deploy-steps { list-style: none; counter-reset: steps; }
+    .deploy-steps li { counter-increment: steps; display: flex; gap: 0.75rem; padding: 0.5rem 0; font-size: 0.85rem; color: var(--muted); }
+    .deploy-steps li::before { content: counter(steps); font-family: var(--mono); font-size: 0.7rem; color: var(--accent); background: rgba(0,212,168,0.1); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    code { font-family: var(--mono); font-size: 0.78rem; background: var(--surface2); padding: 0.15rem 0.4rem; border-radius: 3px; color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- ── LOCK SCREEN ─────────────────────────────────────────────────────── -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">Portfolio Admin</div>
+    <input type="password" class="lock-input" id="passwordInput" placeholder="Enter password" autocomplete="current-password"/>
+    <button class="lock-btn" onclick="unlock()">Unlock →</button>
+    <div class="lock-error" id="lockError">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ── ADMIN SHELL ─────────────────────────────────────────────────────── -->
+<div id="adminShell">
+  <header class="admin-header">
+    <div class="admin-logo">⚙ Portfolio Admin</div>
+    <div class="header-actions">
+      <span class="save-status" id="saveStatus"></span>
+      <a href="/" target="_blank" class="btn-preview">↗ Preview site</a>
+      <button class="btn-save" onclick="saveContent()">💾 Save & Deploy</button>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="admin-body">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Content</div>
+        <div class="sidebar-item active" onclick="showPanel('meta')" id="nav-meta">
+          <span class="icon">👤</span> Profile & Hero
+        </div>
+        <div class="sidebar-item" onclick="showPanel('about')" id="nav-about">
+          <span class="icon">📝</span> About
+        </div>
+        <div class="sidebar-item" onclick="showPanel('stats')" id="nav-stats">
+          <span class="icon">📊</span> Stats
+        </div>
+        <div class="sidebar-item" onclick="showPanel('skills')" id="nav-skills">
+          <span class="icon">🛠</span> Skills
+        </div>
+        <div class="sidebar-item" onclick="showPanel('experience')" id="nav-experience">
+          <span class="icon">💼</span> Experience
+        </div>
+        <div class="sidebar-item" onclick="showPanel('projects')" id="nav-projects">
+          <span class="icon">🚀</span> Projects
+        </div>
+        <div class="sidebar-item" onclick="showPanel('education')" id="nav-education">
+          <span class="icon">🎓</span> Education & Certs
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Settings</div>
+        <div class="sidebar-item" onclick="showPanel('password')" id="nav-password">
+          <span class="icon">🔑</span> Change Password
+        </div>
+        <div class="sidebar-item" onclick="showPanel('deploy')" id="nav-deploy">
+          <span class="icon">🚀</span> How to Deploy
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content" id="mainContent">
+
+      <!-- META -->
+      <div class="panel active" id="panel-meta">
+        <div class="panel-title">Profile & Hero</div>
+        <div class="panel-desc">Your name, title, tagline, contact details and the short bio shown on the hero section.</div>
+        <div class="field-grid">
+          <div class="field-group"><label class="field-label">Full Name</label><input class="field-input" id="meta_name"/></div>
+          <div class="field-group"><label class="field-label">Job Title</label><input class="field-input" id="meta_title"/></div>
+        </div>
+        <div class="field-group"><label class="field-label">Tagline (shown above name)</label><input class="field-input" id="meta_tagline"/></div>
+        <div class="field-grid">
+          <div class="field-group"><label class="field-label">Email</label><input class="field-input" type="email" id="meta_email"/></div>
+          <div class="field-group"><label class="field-label">Phone</label><input class="field-input" id="meta_phone"/></div>
+        </div>
+        <div class="field-group"><label class="field-label">Location</label><input class="field-input" id="meta_location"/></div>
+        <div class="field-grid">
+          <div class="field-group"><label class="field-label">LinkedIn URL</label><input class="field-input" id="meta_linkedin"/></div>
+          <div class="field-group"><label class="field-label">GitHub URL</label><input class="field-input" id="meta_github"/></div>
+        </div>
+        <div class="field-group"><label class="field-label">Short Bio (hero section)</label><textarea class="field-textarea" id="meta_shortBio" rows="3"></textarea></div>
+      </div>
+
+      <!-- ABOUT -->
+      <div class="panel" id="panel-about">
+        <div class="panel-title">About Paragraphs</div>
+        <div class="panel-desc">Each item is a paragraph in your About section. You can use <code>&lt;strong&gt;bold&lt;/strong&gt;</code> for emphasis.</div>
+        <div class="list-editor" id="aboutList"></div>
+        <button class="btn-add" onclick="addAboutParagraph()">+ Add paragraph</button>
+      </div>
+
+      <!-- STATS -->
+      <div class="panel" id="panel-stats">
+        <div class="panel-title">Hero Stats</div>
+        <div class="panel-desc">The three numbers displayed at the bottom of the hero section.</div>
+        <div id="statsList" class="card-list"></div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="panel" id="panel-skills">
+        <div class="panel-title">Skills</div>
+        <div class="panel-desc">Each card shows a category of technologies. Add or remove tags freely.</div>
+        <div class="card-list" id="skillsList"></div>
+        <button class="btn-add-card" onclick="addSkill()">+ Add skill category</button>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="panel" id="panel-experience">
+        <div class="panel-title">Experience</div>
+        <div class="panel-desc">Your work history. The most recent role should be first.</div>
+        <div class="card-list" id="experienceList"></div>
+        <button class="btn-add-card" onclick="addExperience()">+ Add role</button>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="panel" id="panel-projects">
+        <div class="panel-title">Projects</div>
+        <div class="panel-desc">Showcase projects. Leave the link blank to hide the "View project" button.</div>
+        <div class="card-list" id="projectsList"></div>
+        <button class="btn-add-card" onclick="addProject()">+ Add project</button>
+      </div>
+
+      <!-- EDUCATION -->
+      <div class="panel" id="panel-education">
+        <div class="panel-title">Education & Certifications</div>
+        <div class="panel-desc">Your degree and any certifications or awards you want to highlight.</div>
+        <div class="field-group"><label class="field-label">Education</label><input class="field-input" id="education" placeholder="BSc Chemistry — University of Ilorin"/></div>
+        <hr class="divider"/>
+        <label class="field-label">Certifications / Awards</label>
+        <div class="field-hint">Each line is shown as a separate bullet point.</div>
+        <div class="list-editor" id="certList"></div>
+        <button class="btn-add" onclick="addCert()">+ Add certification</button>
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="panel" id="panel-password">
+        <div class="panel-title">Change Password</div>
+        <div class="panel-desc">Your password is stored locally in your browser. Choose something only you know.</div>
+        <div class="password-box">
+          <div class="field-group"><label class="field-label">Current Password</label><input class="field-input" type="password" id="currentPw"/></div>
+          <div class="field-group"><label class="field-label">New Password</label><input class="field-input" type="password" id="newPw"/></div>
+          <div class="field-group"><label class="field-label">Confirm New Password</label><input class="field-input" type="password" id="confirmPw"/></div>
+          <button class="btn-save" onclick="changePassword()" style="margin-top:0.5rem">Update Password</button>
+          <div class="lock-error" id="pwError" style="display:none; margin-top:0.75rem;"></div>
+        </div>
+      </div>
+
+      <!-- DEPLOY -->
+      <div class="panel" id="panel-deploy">
+        <div class="panel-title">How to Deploy Updates</div>
+        <div class="panel-desc">When you click "Save & Deploy", your changes are saved to <code>content.json</code>. To go live you need to push to GitHub — Vercel will auto-deploy.</div>
+        <div class="deploy-banner">
+          <h3>🚀 Deployment workflow</h3>
+          <ol class="deploy-steps">
+            <li>Click <strong>Save & Deploy</strong> above — this downloads an updated <code>content.json</code> to your computer.</li>
+            <li>Replace the <code>content.json</code> file in your project folder with the downloaded one.</li>
+            <li>Open your terminal in the project folder and run: <code>git add content.json && git commit -m "Update content" && git push</code></li>
+            <li>Vercel detects the push and automatically redeploys your site — usually live in under 30 seconds.</li>
+          </ol>
+        </div>
+        <div class="deploy-banner">
+          <h3>📁 Your project folder structure</h3>
+          <ol class="deploy-steps">
+            <li><code>index.html</code> — your main portfolio page</li>
+            <li><code>admin/index.html</code> — this admin panel</li>
+            <li><code>content.json</code> — all your site content (edit this via admin)</li>
+          </ol>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  // ── Password & Auth ──────────────────────────────────────────────────────
+  const DEFAULT_PASSWORD = 'Abdullahi2024!';
+  let currentData = null;
+
+  function getPassword() {
+    return localStorage.getItem('admin_pw') || DEFAULT_PASSWORD;
+  }
+
+  function unlock() {
+    const input = document.getElementById('passwordInput').value;
+    if (input === getPassword()) {
+      document.getElementById('lockScreen').style.display = 'none';
+      document.getElementById('adminShell').style.display = 'block';
+      init();
+    } else {
+      document.getElementById('lockError').style.display = 'block';
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordInput').focus();
+    }
+  }
+
+  document.getElementById('passwordInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') unlock();
+    document.getElementById('lockError').style.display = 'none';
+  });
+
+  function logout() {
+    document.getElementById('adminShell').style.display = 'none';
+    document.getElementById('lockScreen').style.display = 'flex';
+    document.getElementById('passwordInput').value = '';
+  }
+
+  function changePassword() {
+    const current = document.getElementById('currentPw').value;
+    const newP = document.getElementById('newPw').value;
+    const confirm = document.getElementById('confirmPw').value;
+    const err = document.getElementById('pwError');
+    if (current !== getPassword()) { err.textContent = 'Current password is incorrect.'; err.style.display = 'block'; return; }
+    if (newP.length < 6) { err.textContent = 'New password must be at least 6 characters.'; err.style.display = 'block'; return; }
+    if (newP !== confirm) { err.textContent = 'Passwords do not match.'; err.style.display = 'block'; return; }
+    localStorage.setItem('admin_pw', newP);
+    err.style.display = 'none';
+    document.getElementById('currentPw').value = '';
+    document.getElementById('newPw').value = '';
+    document.getElementById('confirmPw').value = '';
+    showSaveStatus('✓ Password updated successfully', 'success');
+  }
+
+  // ── Panel nav ─────────────────────────────────────────────────────────────
+  function showPanel(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+  }
+
+  // ── Load & render ─────────────────────────────────────────────────────────
+  async function init() {
+    try {
+      const res = await fetch('/content.json?v=' + Date.now());
+      currentData = await res.json();
+      populateAll(currentData);
+    } catch(e) {
+      console.error(e);
+      showSaveStatus('⚠ Could not load content.json — check your setup', 'error');
+    }
+  }
+
+  function populateAll(d) {
+    // Meta
+    ['name','title','tagline','email','phone','location','linkedin','github','shortBio'].forEach(k => {
+      const el = document.getElementById('meta_' + k);
+      if (el) el.value = d.meta[k] || '';
+    });
+    // About
+    renderAboutList(d.about.paragraphs);
+    // Stats
+    renderStatsList(d.stats);
+    // Skills
+    renderSkillsList(d.skills);
+    // Experience
+    renderExperienceList(d.experience);
+    // Projects
+    renderProjectsList(d.projects);
+    // Education
+    document.getElementById('education').value = d.education || '';
+    renderCertList(d.certifications);
+  }
+
+  // ── About ─────────────────────────────────────────────────────────────────
+  function renderAboutList(paragraphs) {
+    const el = document.getElementById('aboutList');
+    el.innerHTML = '';
+    paragraphs.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'list-item-row';
+      row.innerHTML = `<textarea class="field-textarea about-para" rows="3" data-index="${i}">${p}</textarea>
+        <button class="btn-remove" onclick="removeAbout(${i})">✕</button>`;
+      el.appendChild(row);
+    });
+  }
+  function addAboutParagraph() {
+    const paras = getAboutParagraphs();
+    paras.push('New paragraph text here.');
+    renderAboutList(paras);
+  }
+  function removeAbout(i) {
+    const paras = getAboutParagraphs();
+    paras.splice(i, 1);
+    renderAboutList(paras);
+  }
+  function getAboutParagraphs() {
+    return [...document.querySelectorAll('.about-para')].map(t => t.value);
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  function renderStatsList(stats) {
+    const el = document.getElementById('statsList');
+    el.innerHTML = '';
+    stats.forEach((s, i) => {
+      const card = document.createElement('div');
+      card.className = 'editor-card';
+      card.style.padding = '1.25rem';
+      card.innerHTML = `<div class="field-grid">
+        <div class="field-group"><label class="field-label">Value</label><input class="field-input stat-val" data-index="${i}" value="${s.value}" placeholder="5+"/></div>
+        <div class="field-group"><label class="field-label">Label</label><input class="field-input stat-label-inp" data-index="${i}" value="${s.label}" placeholder="Years of Experience"/></div>
+      </div>`;
+      el.appendChild(card);
+    });
+  }
+  function getStats() {
+    const vals = [...document.querySelectorAll('.stat-val')].map(e => e.value);
+    const labels = [...document.querySelectorAll('.stat-label-inp')].map(e => e.value);
+    return vals.map((v, i) => ({ value: v, label: labels[i] }));
+  }
+
+  // ── Skills ────────────────────────────────────────────────────────────────
+  function renderSkillsList(skills) {
+    const el = document.getElementById('skillsList');
+    el.innerHTML = '';
+    skills.forEach((s, i) => {
+      const card = document.createElement('div');
+      card.className = 'editor-card';
+      card.innerHTML = `
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-header-left">
+            <span>${s.icon}</span>
+            <div><div class="card-header-title">${s.name}</div><div class="card-header-sub">${s.tags.length} tags</div></div>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <button class="btn-danger" onclick="event.stopPropagation();removeSkill(${i})">Remove</button>
+            <span class="card-chevron">▼</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="field-grid">
+            <div class="field-group"><label class="field-label">Icon (emoji)</label><input class="field-input skill-icon" data-index="${i}" value="${s.icon}"/></div>
+            <div class="field-group"><label class="field-label">Category Name</label><input class="field-input skill-name" data-index="${i}" value="${s.name}"/></div>
+          </div>
+          <label class="field-label" style="margin-bottom:0.5rem">Tags (one per line)</label>
+          <textarea class="field-textarea skill-tags" data-index="${i}" rows="5">${s.tags.join('\n')}</textarea>
+        </div>`;
+      el.appendChild(card);
+    });
+  }
+  function addSkill() {
+    const skills = getSkills();
+    skills.push({ icon: '⚡', name: 'New Category', tags: ['Tag 1', 'Tag 2'] });
+    renderSkillsList(skills);
+  }
+  function removeSkill(i) {
+    const skills = getSkills();
+    skills.splice(i, 1);
+    renderSkillsList(skills);
+  }
+  function getSkills() {
+    const icons = [...document.querySelectorAll('.skill-icon')].map(e => e.value);
+    const names = [...document.querySelectorAll('.skill-name')].map(e => e.value);
+    const tags = [...document.querySelectorAll('.skill-tags')].map(e => e.value.split('\n').map(t=>t.trim()).filter(Boolean));
+    return icons.map((icon, i) => ({ icon, name: names[i], tags: tags[i] }));
+  }
+
+  // ── Experience ────────────────────────────────────────────────────────────
+  function renderExperienceList(experience) {
+    const el = document.getElementById('experienceList');
+    el.innerHTML = '';
+    experience.forEach((e, i) => {
+      const card = document.createElement('div');
+      card.className = 'editor-card';
+      card.innerHTML = `
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-header-left">
+            <div><div class="card-header-title">${e.role}</div><div class="card-header-sub">${e.company} · ${e.dates}</div></div>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <button class="btn-danger" onclick="event.stopPropagation();removeExperience(${i})">Remove</button>
+            <span class="card-chevron">▼</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="field-grid">
+            <div class="field-group"><label class="field-label">Role / Title</label><input class="field-input exp-role" data-index="${i}" value="${e.role}"/></div>
+            <div class="field-group"><label class="field-label">Company</label><input class="field-input exp-company" data-index="${i}" value="${e.company}"/></div>
+          </div>
+          <div class="field-grid">
+            <div class="field-group"><label class="field-label">Dates</label><input class="field-input exp-dates" data-index="${i}" value="${e.dates}"/></div>
+            <div class="field-group"><label class="field-label">Type (Hybrid/Remote/etc)</label><input class="field-input exp-type" data-index="${i}" value="${e.type}"/></div>
+          </div>
+          <div class="field-group"><label class="field-label">Company Blurb</label><input class="field-input exp-blurb" data-index="${i}" value="${e.blurb}"/></div>
+          <label class="field-label" style="margin-bottom:0.5rem">Bullet Points (one per line)</label>
+          <textarea class="field-textarea exp-bullets" data-index="${i}" rows="6">${e.bullets.join('\n')}</textarea>
+          <div class="field-group" style="margin-top:1rem"><label class="field-label">Technologies (one per line)</label>
+          <textarea class="field-textarea exp-tech" data-index="${i}" rows="4">${e.tech.join('\n')}</textarea></div>
+        </div>`;
+      el.appendChild(card);
+    });
+  }
+  function addExperience() {
+    const exp = getExperience();
+    exp.unshift({ role: 'New Role', company: 'Company Name', dates: '2024 – Present', type: 'Hybrid', blurb: 'Company description', bullets: ['Achievement one', 'Achievement two'], tech: ['Java', 'Spring Boot'] });
+    renderExperienceList(exp);
+  }
+  function removeExperience(i) {
+    const exp = getExperience();
+    exp.splice(i, 1);
+    renderExperienceList(exp);
+  }
+  function getExperience() {
+    const roles = [...document.querySelectorAll('.exp-role')].map(e => e.value);
+    const companies = [...document.querySelectorAll('.exp-company')].map(e => e.value);
+    const dates = [...document.querySelectorAll('.exp-dates')].map(e => e.value);
+    const types = [...document.querySelectorAll('.exp-type')].map(e => e.value);
+    const blurbs = [...document.querySelectorAll('.exp-blurb')].map(e => e.value);
+    const bullets = [...document.querySelectorAll('.exp-bullets')].map(e => e.value.split('\n').map(b=>b.trim()).filter(Boolean));
+    const tech = [...document.querySelectorAll('.exp-tech')].map(e => e.value.split('\n').map(t=>t.trim()).filter(Boolean));
+    return roles.map((r, i) => ({ role: r, company: companies[i], dates: dates[i], type: types[i], blurb: blurbs[i], bullets: bullets[i], tech: tech[i] }));
+  }
+
+  // ── Projects ──────────────────────────────────────────────────────────────
+  function renderProjectsList(projects) {
+    const el = document.getElementById('projectsList');
+    el.innerHTML = '';
+    projects.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'editor-card';
+      card.innerHTML = `
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-header-left">
+            <div><div class="card-header-title">${p.name}</div><div class="card-header-sub">${p.num}</div></div>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <button class="btn-danger" onclick="event.stopPropagation();removeProject(${i})">Remove</button>
+            <span class="card-chevron">▼</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="field-grid">
+            <div class="field-group"><label class="field-label">Number Label</label><input class="field-input proj-num" data-index="${i}" value="${p.num}"/></div>
+            <div class="field-group"><label class="field-label">Project Name</label><input class="field-input proj-name" data-index="${i}" value="${p.name}"/></div>
+          </div>
+          <div class="field-group"><label class="field-label">Description</label><textarea class="field-textarea proj-desc" data-index="${i}" rows="3">${p.desc}</textarea></div>
+          <div class="field-group"><label class="field-label">Live URL (leave blank to hide button)</label><input class="field-input proj-link" data-index="${i}" value="${p.link||''}" placeholder="https://..."/></div>
+          <label class="field-label" style="margin-bottom:0.5rem">Tags (one per line)</label>
+          <textarea class="field-textarea proj-tags" data-index="${i}" rows="4">${p.tags.join('\n')}</textarea>
+        </div>`;
+      el.appendChild(card);
+    });
+  }
+  function addProject() {
+    const projects = getProjects();
+    const num = String(projects.length + 1).padStart(2, '0');
+    projects.push({ num, name: 'New Project', desc: 'Project description here.', link: '', tags: ['Java'] });
+    renderProjectsList(projects);
+  }
+  function removeProject(i) {
+    const projects = getProjects();
+    projects.splice(i, 1);
+    renderProjectsList(projects);
+  }
+  function getProjects() {
+    const nums = [...document.querySelectorAll('.proj-num')].map(e => e.value);
+    const names = [...document.querySelectorAll('.proj-name')].map(e => e.value);
+    const descs = [...document.querySelectorAll('.proj-desc')].map(e => e.value);
+    const links = [...document.querySelectorAll('.proj-link')].map(e => e.value);
+    const tags = [...document.querySelectorAll('.proj-tags')].map(e => e.value.split('\n').map(t=>t.trim()).filter(Boolean));
+    return nums.map((n, i) => ({ num: n, name: names[i], desc: descs[i], link: links[i], tags: tags[i] }));
+  }
+
+  // ── Certs ─────────────────────────────────────────────────────────────────
+  function renderCertList(certs) {
+    const el = document.getElementById('certList');
+    el.innerHTML = '';
+    certs.forEach((c, i) => {
+      const row = document.createElement('div');
+      row.className = 'list-item-row';
+      row.innerHTML = `<input class="field-input cert-item" value="${c}" data-index="${i}"/>
+        <button class="btn-remove" onclick="removeCert(${i})">✕</button>`;
+      el.appendChild(row);
+    });
+  }
+  function addCert() {
+    const certs = getCerts();
+    certs.push('New certification or award');
+    renderCertList(certs);
+  }
+  function removeCert(i) {
+    const certs = getCerts();
+    certs.splice(i, 1);
+    renderCertList(certs);
+  }
+  function getCerts() {
+    return [...document.querySelectorAll('.cert-item')].map(e => e.value);
+  }
+
+  // ── Card toggle ───────────────────────────────────────────────────────────
+  function toggleCard(header) {
+    const body = header.nextElementSibling;
+    const chevron = header.querySelector('.card-chevron');
+    body.classList.toggle('open');
+    chevron.classList.toggle('open');
+  }
+
+  // ── Collect & Save ────────────────────────────────────────────────────────
+  function collectData() {
+    return {
+      meta: {
+        name: document.getElementById('meta_name').value,
+        title: document.getElementById('meta_title').value,
+        tagline: document.getElementById('meta_tagline').value,
+        email: document.getElementById('meta_email').value,
+        phone: document.getElementById('meta_phone').value,
+        location: document.getElementById('meta_location').value,
+        linkedin: document.getElementById('meta_linkedin').value,
+        github: document.getElementById('meta_github').value,
+        shortBio: document.getElementById('meta_shortBio').value,
+      },
+      about: { paragraphs: getAboutParagraphs() },
+      stats: getStats(),
+      skills: getSkills(),
+      experience: getExperience(),
+      projects: getProjects(),
+      certifications: getCerts(),
+      education: document.getElementById('education').value
+    };
+  }
+
+  function saveContent() {
+    try {
+      const data = collectData();
+      const json = JSON.stringify(data, null, 2);
+      // Download the file
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'content.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showSaveStatus('✓ content.json downloaded — push to GitHub to deploy', 'success');
+    } catch(e) {
+      showSaveStatus('⚠ Error saving — check console', 'error');
+      console.error(e);
+    }
+  }
+
+  function showSaveStatus(msg, type) {
+    const el = document.getElementById('saveStatus');
+    el.textContent = msg;
+    el.className = 'save-status show ' + type;
+    setTimeout(() => { el.className = 'save-status'; }, 5000);
+  }
+</script>
+</body>
+</html>
